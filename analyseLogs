@@ -2,6 +2,7 @@
 import xml.etree.cElementTree as ET
 import sys
 import os.path
+import shutil
 import random
 from math import pi
 from gi.repository import Gtk
@@ -11,23 +12,37 @@ from gi.repository import GObject
 import glib
 
 
+
 def checkLogs():
-
-
-	path = './logs'
-
+	path = './logs/'	
 	for file in os.listdir(path):
 		if file.endswith(".gpx"):
-			sortFiles
+			fileName = str(file)
+			filePath = path + fileName
+
+			jobDirSort(fileName, filePath)
+			#test(NameSpace)
+
+def jobDirSort(fileName, filePath):
+	tree = ET.parse(filePath)
+	root = tree.getroot()
+	#Get rid of XMLNS nonsense
+	length = len(root.tag)
+	length -= 3
+	NSpace = root.tag[0:length]
+
+	if root[1].tag == str(NSpace + 'wpt'):	#Check if the file has been job-tagged
+		jobID = root[1][2].text
+		if not os.path.exists('./logs/' + jobID):
+			os.makedirs('./logs/' + jobID)
+		shutil.move(filePath, './logs/' + jobID + '/' + fileName)
 
 
-def test():
+def test(NSpace):
 	tree = ET.parse('./logs/20150908.gpx')
 	root = tree.getroot()
-	#for child in root:
-	#	print child.tag, child.text
 
-	if root[1].tag == '{http://www.topografix.com/GPX/1/0}wpt':
+	if root[1].tag == str(NSpace + 'wpt'):	#Check if the file has been job-tagged
 		track = root[2]
 		trackSeg = root[2][0]
 		jobID = root[1][2].text
@@ -38,17 +53,21 @@ def test():
 		trackSeg = root[1][0]			
 
 	for trackPnt in trackSeg.iter():
-		if trackPnt.tag == '{http://www.topografix.com/GPX/1/0}time':
+		if trackPnt.tag == str(NSpace + 'time'):
 			print trackPnt.text 
 
-		if trackPnt.tag == '{http://www.topografix.com/GPX/1/0}trkpt':
+		if trackPnt.tag == str(NSpace + 'trkpt'):
 			print "lat", trackPnt.attrib['lat']
 			print "lon", trackPnt.attrib['lon']
 
-		if trackPnt.tag == '{http://www.topografix.com/GPX/1/0}course':
+		if trackPnt.tag == str(NSpace + 'course'):
 			print "Course is", trackPnt.text	
 
 
 
-#checkLogs()
-test()
+
+
+
+checkLogs()
+#test()
+#xmlNameSpace(
