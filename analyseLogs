@@ -1,0 +1,54 @@
+#!/usr/bin/python
+import xml.etree.cElementTree as ET
+import sys
+import os.path
+import random
+from math import pi
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GdkPixbuf
+from gi.repository import GObject
+import glib
+
+
+def checkLogs():
+
+
+	path = './logs'
+
+	for file in os.listdir(path):
+		if file.endswith(".gpx"):
+			sortFiles
+
+
+def test():
+	tree = ET.parse('./logs/20150908.gpx')
+	root = tree.getroot()
+	#for child in root:
+	#	print child.tag, child.text
+
+	if root[1].tag == '{http://www.topografix.com/GPX/1/0}wpt':
+		track = root[2]
+		trackSeg = root[2][0]
+		jobID = root[1][2].text
+		print jobID
+
+	else:
+		track = root[1]
+		trackSeg = root[1][0]			
+
+	for trackPnt in trackSeg.iter():
+		if trackPnt.tag == '{http://www.topografix.com/GPX/1/0}time':
+			print trackPnt.text 
+
+		if trackPnt.tag == '{http://www.topografix.com/GPX/1/0}trkpt':
+			print "lat", trackPnt.attrib['lat']
+			print "lon", trackPnt.attrib['lon']
+
+		if trackPnt.tag == '{http://www.topografix.com/GPX/1/0}course':
+			print "Course is", trackPnt.text	
+
+
+
+#checkLogs()
+test()

@@ -1,0 +1,91 @@
+import sys
+import os.path
+import random
+from math import pi
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GdkPixbuf
+from gi.repository import GObject
+import glib
+
+
+GObject.threads_init()
+Gdk.threads_init()
+
+from gi.repository import OsmGpsMap as osmgpsmap
+print "using library: %s (version %s)" % (osmgpsmap.__file__, osmgpsmap._version)
+
+assert osmgpsmap._version == "1.0"
+
+
+SHOW_TRACK = True
+
+assert osmgpsmap._version >= "0.7.0"
+
+m = osmgpsmap.Map()
+m.props.record_trip_history = SHOW_TRACK
+m.props.show_trip_history = SHOW_TRACK
+
+
+lat1 = 51.16
+lon1 = 0.26
+
+lat2 = 51
+lon2 = 0.26
+
+trackColour = Gdk.Color(0, 0, 1)
+
+newTrack = osmgpsmap.MapTrack()
+
+point1 = osmgpsmap.MapPoint.new_degrees(51.16, 0)
+point2 = osmgpsmap.MapPoint.new_degrees(51.16, 10)
+point3 = osmgpsmap.MapPoint.new_degrees(55, 10)
+point4 = osmgpsmap.MapPoint.new_degrees(55, 0)
+point5 = osmgpsmap.MapPoint.new_degrees(51.16, 0)
+
+pointList = [point1, point2, point3, point4, point5]
+
+
+for item in pointList:
+	newTrack.add_point(item)
+#newTrack.set_property("editable", True)
+
+
+newTrack.props.line_width = 5
+#newTrack.props.alpha = .5
+newTrack.props.color = trackColour
+
+m.track_add(newTrack)
+
+
+pb = GdkPixbuf.Pixbuf.new_from_file("starfish.png")
+#m.image_add(lat1, lon1, pb)
+for item in pointList:
+	pos = (item.get_degrees())
+	m.image_add(pos[0], pos[1], pb)
+"""
+m.gps_add(lat1, lon1, 0)
+m.gps_add(lat2, lon2, 0)
+m.set_zoom(12)
+m.props.gps_track_width = 5
+"""
+
+
+m.set_center_and_zoom(47, 5, 5)
+
+w = Gtk.Window()
+w.connect("destroy", Gtk.main_quit)
+w.set_default_size(800,400)
+w.add(m)
+w.show_all()
+
+
+
+pb = GdkPixbuf.Pixbuf.new_from_file("starfish.png")
+#i = m.image_add(lat,lon,pb)
+
+
+
+
+
+Gtk.main()
