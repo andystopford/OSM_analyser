@@ -1,0 +1,10 @@
+<Root>	
+	<jobID id="grov" name="Grosvenor Removals">
+		<locality place="The Yard" lat="51.1392" lon="0.27"/>
+		<locality place="Pig's Hill" lat="51.1407" lon="0.2767"/>
+	</jobID>
+	<jobID id="dan" name="Dan's House">
+		<locality place="Fuller Towers" lat="51.1458" lon="0.2729"/>
+	</jobID>
+		
+</Root>
