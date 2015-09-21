@@ -6,5 +6,8 @@
 	<jobID id="dan" name="Dan's House">
 		<locality place="Fuller Towers" lat="51.1458" lon="0.2729"/>
 	</jobID>
+	<jobID id="home">
+		<locality place="Home" lat="51.1596" lon="0.2598" />
+	</jobID>
 		
 </Root>
