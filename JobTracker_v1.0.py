@@ -63,6 +63,7 @@ class MainWindow():
             show_crosshair=True))
         self.log_list = []
         self.point_list = []
+        self.time_list = []
         self.selected_date = ''
         self.list_store = Gtk.ListStore(str)
 
@@ -80,18 +81,14 @@ class MainWindow():
         self.display_finish = builder.get_object("display_finish")
         self.display_hours = builder.get_object("display_hours")
         self.display_time = builder.get_object("display_time")
-        self.button_start = builder.get_object("button_mark_start")
-        self.button_finish = builder.get_object("button_mark_finish")
-        self.button_back = builder.get_object("button_back")
-        self.button_forward = builder.get_object("button_forward")
+        self.button_clear = builder.get_object("button_clear")
+
         
         ###############################################################
         # Connect signals
         self.osm.connect('button_release_event', self.lat_lon_display)
-        self.button_start.connect('clicked', self.mark_time)
-        self.button_finish.connect('clicked', self.mark_time)
-        self.button_back.connect('clicked', self.back)
-        self.button_forward.connect('clicked', self.forward)
+        self.button_clear.connect('clicked', self.clear_times)
+
 
         # Calendar
         self.calendar.connect("day_selected", self.select_day)
@@ -102,7 +99,9 @@ class MainWindow():
 
         self.timeline.connect("change_value", self.get_curr_time)
 
-        self.connect('key_press_event', on_key_press_event)
+        handlers = {'on_key_press_event' : self.on_key_press_event}
+        builder.connect_signals(handlers)
+
     ################################################################
     # Initialise 
         self.time_marker_layer()
@@ -113,9 +112,9 @@ class MainWindow():
             %(self.osm.props.latitude, self.osm.props.longitude))
 
 
-    def on_key_press_event(widget, event):
-        keyname = Gtk.gdk.keyval_name(event.keyval)
-        print "Key %s (%d) was pressed" % (keyname, event.keyval)
+    def on_key_press_event(self, widget, event):
+        if event.keyval == Gdk.KEY_space:
+            self.mark_time()
 
 
     ##################################################################
@@ -218,6 +217,7 @@ class MainWindow():
             self.draw_points(self.point_list)
             self.get_locations(jobID)
             self.set_timeline()
+            self.time_list = []
 
 
     def get_locations(self, jobID):
@@ -332,36 +332,30 @@ class MainWindow():
 
     ##################################################################
     # Times
-    def mark_time(self, name):
-        """ Gets start and finish times when the appropriate
-        button is clicked and calculates total hours worked.
+    def mark_time(self):
+        """ Gets start and finish times and calculates total 
+        hours worked.
         Allows times to be changed and recalculates total.
         """
-        if self.display_start.get_text() == '':
-            start_time = 0
-        else:
-            start_time = self.get_displayed_time('Start')
+        time_sel = self.timeline.get_value()
+        self.time_list.append(time_sel)
 
-        if self.display_finish.get_text() == '':
-            finish_time = 0
-        else:
-            finish_time = self.get_displayed_time('Finish')
+        start_offset = self.point_list[0].time
+        start = min(self.time_list) + start_offset
+        finish = max(self.time_list) + start_offset
+        self.display_start_finish(start, finish)
+        self.display_worked(start, finish)
+   
+    def display_start_finish(self, start, finish):
+        TC = TimeConverter(start)
+        display = TC.get_time_hrs_mins()
+        display = str(display[0]) + ':' + str(display[1]) 
+        self.display_start.set_text(display)
 
-        if name.get_label() == 'Start':
-            start_time = self.timeline.get_value()
-            TC = TimeConverter(start_time)
-            display = TC.get_time_hrs_mins()
-            display = str(display[0]) + ':' + str(display[1]) 
-            self.display_start.set_text(display)
-            self.display_worked(start_time, finish_time)
-
-        else:
-            finish_time = self.timeline.get_value()
-            TC = TimeConverter(finish_time)
-            display = TC.get_time_hrs_mins()
-            display = str(display[0]) + ':' + str(display[1])
-            self.display_finish.set_text(display)
-            self.display_worked(start_time, finish_time)
+        TC = TimeConverter(finish)
+        display = TC.get_time_hrs_mins()
+        display = str(display[0]) + ':' + str(display[1])
+        self.display_finish.set_text(display)
 
 
     def display_worked(self, start_time, finish_time):
@@ -380,6 +374,12 @@ class MainWindow():
         TC = TimeConverter(time)
         time = TC.get_time_mins()
         return time
+
+
+    def clear_times(self, widget):
+        self.time_list = []
+        self.display_start_finish(0, 0)
+        self.display_worked(0, 0)
 
     #################################################################
 
